@@ -489,11 +489,11 @@ function AutomationBars({ data }: { data: any[] }) {
           </g>
         );
       })}
-      <rect x={left} y={h - 26} width="10" height="10" rx="3" fill="var(--accent)" />
+      <rect x={left} y={h - 26} width="10" height="10" rx="3" fill="url(#prepGrad)" />
       <text x={left + 16} y={h - 17} className="tick">
         Consolidation hours / mo
       </text>
-      <rect x={left + 180} y={h - 26} width="10" height="10" rx="3" fill="var(--teal)" />
+      <rect x={left + 180} y={h - 26} width="10" height="10" rx="3" fill="url(#reconGrad)" />
       <text x={left + 196} y={h - 17} className="tick">
         Reconciliation hours / mo
       </text>

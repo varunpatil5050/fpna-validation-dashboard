@@ -1,6 +1,14 @@
-# FP&A Market Validation Dashboard
+# FP&A Market Validation & Research Intelligence Dashboard
 
-Interactive React + TypeScript dashboard built from the revised 37-response simulated dataset.
+🌐 **Live Demo:** [https://varunpatil5050.github.io/fpna-validation-dashboard/](https://varunpatil5050.github.io/fpna-validation-dashboard/)
+
+Interactive executive FP&A research analytics, market validation, operational friction index, and data consolidation intelligence dashboard built with React 18, TypeScript, and Vite.
+
+## Deployment
+To deploy updates to GitHub Pages:
+```bash
+npm run deploy
+```
 
 ## What changed
 - Full React state-driven filters for employee bracket and finance role

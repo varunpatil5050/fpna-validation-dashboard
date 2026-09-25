@@ -1587,9 +1587,6 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
           <a href="#thesis">Product Thesis</a>
         </nav>
         <div className="header-actions">
-          <button className="icon-btn" onClick={toggleSound} title={soundEnabled ? "Mute haptic audio" : "Enable haptic audio"}>
-            {soundEnabled ? <Icons.SpeakerOn size={15} /> : <Icons.SpeakerMute size={15} />}
-          </button>
           <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
             {theme === "dark" ? <Icons.Sun size={15} /> : <Icons.Moon size={15} />}
           </button>

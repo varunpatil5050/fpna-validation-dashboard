@@ -1630,7 +1630,7 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         <SectionHead
           num="01 · Executive Problem Statement"
           title="Finance must assemble reality before it can interpret it."
-          body="The recurring burden is the painstaking collection, mapping, reconciliation, and validation of data across fragmented ERP, CRM, Billing, HR, and product databases before leadership can trust the metrics."
+          body="FP&A teams in mid-market SaaS companies struggle to consolidate data from ERP, CRM, HR, billing, and product systems, resulting in manual work, spreadsheet errors, delayed reporting, and poor forecasting accuracy"
         />
         <div className="problem reveal reveal-delay-2">
           <div className="problem-copy">

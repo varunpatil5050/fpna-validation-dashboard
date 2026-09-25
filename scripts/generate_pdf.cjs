@@ -28,16 +28,28 @@ const fs = require('fs');
       header.style.position = 'static';
     }
 
-    // Add print-specific CSS
+    // Add print-specific CSS for landscape zero-margin presentation
     const style = document.createElement('style');
     style.innerHTML = `
       @page {
-        size: A4 portrait;
-        margin: 12mm 10mm;
+        size: A4 landscape;
+        margin: 0;
       }
-      body {
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        background: #0b0f17 !important;
+      }
+      .shell {
+        max-width: 100% !important;
+        padding: 20px 40px 40px !important;
+      }
+      .header {
+        position: static !important;
+        max-width: 100% !important;
+        padding: 0 40px !important;
       }
       .section {
         break-inside: avoid;
@@ -48,7 +60,7 @@ const fs = require('fs');
       .hero {
         break-inside: avoid;
         page-break-inside: avoid;
-        margin-top: 10px !important;
+        margin-top: 16px !important;
       }
       .card, .hyp-row-card, .problem, .unit-card, .proposition-diagram-col {
         break-inside: avoid;
@@ -61,45 +73,36 @@ const fs = require('fs');
     document.head.appendChild(style);
   });
 
-  // Emulate print media
+  // Emulate screen media so charts and CSS grid render with full rich aesthetics
   await page.emulateMediaType('screen');
 
   const artifactDir = '/Users/varunpatil/.gemini/antigravity-ide/brain/bb210ab9-bf2e-4c22-b9ac-454ab1c4071d';
-  const artifactPdfPath = path.join(artifactDir, 'fpna_dashboard_report.pdf');
-  const localPdfPath = path.resolve(__dirname, 'fpna_market_validation_report.pdf');
+  const artifactPdfPath = path.join(artifactDir, 'fpna_market_validation_landscape.pdf');
+  const localPdfPath = path.resolve(__dirname, '../fpna_market_validation_report.pdf');
+  const exportsPdfPath = path.resolve(__dirname, '../exports/fpna_market_validation_report.pdf');
+  const publicPdfPath = path.resolve(__dirname, '../public/exports/fpna_market_validation_report.pdf');
 
-  // Also create a presentation continuous PDF (1440px wide) that looks exactly like the live website
-  const continuousPdfPath = path.resolve(__dirname, 'fpna_dashboard_continuous.pdf');
-
-  console.log('Generating paginated A4 executive report PDF...');
+  console.log('Generating A4 Landscape zero-margin executive PDF...');
   await page.pdf({
     path: localPdfPath,
     format: 'A4',
+    landscape: true,
     printBackground: true,
     margin: {
-      top: '12mm',
-      bottom: '12mm',
-      left: '10mm',
-      right: '10mm'
+      top: '0px',
+      bottom: '0px',
+      left: '0px',
+      right: '0px'
     }
   });
 
-  // Save copy to artifact dir
+  // Save copies to exports, public, and artifact directories
   fs.copyFileSync(localPdfPath, artifactPdfPath);
+  fs.copyFileSync(localPdfPath, exportsPdfPath);
+  fs.copyFileSync(localPdfPath, publicPdfPath);
 
-  console.log('Generating full-width continuous presentation PDF...');
-  const bodyHeight = await page.evaluate(() => document.body.scrollHeight);
-  await page.pdf({
-    path: continuousPdfPath,
-    width: '1440px',
-    height: `${bodyHeight + 50}px`,
-    printBackground: true,
-    margin: { top: '0px', bottom: '0px', left: '0px', right: '0px' }
-  });
-
-  console.log('PDFs generated successfully:');
-  console.log('1. A4 Executive Report:', localPdfPath);
-  console.log('2. Continuous Full-Width Presentation:', continuousPdfPath);
+  console.log('PDF generated successfully:');
+  console.log('Landscape Zero-Margin Executive Report:', localPdfPath);
 
   await browser.close();
 })();

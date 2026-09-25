@@ -1223,7 +1223,7 @@ const STAGES_DATA = [
     sub: "Meet finance where it works",
     eyebrow: "STAGE 05 / FINANCE-OWNED WORKFLOW",
     title: "Push verified, finance-ready figures where teams work.",
-    desc: "Deliver governed, reconciled metrics directly into the native Excel models, Google Sheets, planning software, and executive dashboards leadership already relies on.",
+    desc: "A purpose-built Finance Data Readiness Layer connects source systems, standardizes entity mappings, audits control totals, and publishes trusted finance-ready feeds into the tools teams already love.",
     points: [
       "Bi-directional live sync with Microsoft Excel & Google Sheets add-ins",
       "Zero disruption to existing analyst financial models and workflows",
@@ -1404,6 +1404,17 @@ function ProductThesis() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Strategic Architecture Mandate Card */}
+      <div className="proposal-conclusion-card">
+        <div className="conclusion-badge-wrap">
+          <span className="live-pulse-dot" />
+          <span className="conclusion-badge">Strategic Architecture Mandate</span>
+        </div>
+        <p className="conclusion-statement">
+          A purpose-built Finance Data Readiness Layer connects source systems, standardizes entity mappings, audits control totals, and publishes trusted finance-ready feeds into the tools teams already love.
+        </p>
       </div>
     </div>
   );
@@ -1648,11 +1659,11 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         <SectionHead
           num="01 · Executive Problem Statement"
           title="Finance must assemble reality before it can interpret it."
-          body="The recurring burden is the painstaking collection, mapping, reconciliation, and validation of data across fragmented ERP, CRM, Billing, HR, and product databases before leadership can trust the metrics."
+          body="FP&A teams struggle to consolidate data from ERP, CRM, HR, billing, and product systems, resulting in manual work, spreadsheet errors, delayed reporting, and poor forecasting accuracy."
         />
         <div className="problem reveal reveal-delay-2">
           <div className="problem-copy">
-            The empirical data reveals that <em>fragmented source architecture and manual spreadsheet workflows</em> are directly associated with heavy reconciliation drag, downstream reporting latency, and diminished strategic advisory time.
+            “FP&A teams struggle to consolidate data from ERP, CRM, HR, billing, and product systems, resulting in manual work, spreadsheet errors, delayed reporting, and poor forecasting accuracy.”
           </div>
           <div className="research-note">
             <b>
@@ -1965,7 +1976,7 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         <SectionHead
           num="06 · Strategic Product Proposition"
           title="From fragmented systems to finance-ready data."
-          body="A purpose-built, finance-owned reconciliation and data-preparation layer connecting business systems, standardizing definitions, and feeding trusted figures into Excel and Sheets."
+          body="A purpose-built Finance Data Readiness Layer connects source systems, standardizes entity mappings, audits control totals, and publishes trusted finance-ready feeds into the tools teams already love."
         />
         <ProductThesis />
       </section>

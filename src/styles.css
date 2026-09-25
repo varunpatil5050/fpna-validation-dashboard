@@ -2274,6 +2274,40 @@ button, select, input { font: inherit; }
   flex-shrink: 0;
 }
 
+/* Strategic Mandate Conclusion Card */
+.proposal-conclusion-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  margin-top: 8px;
+}
+.conclusion-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.conclusion-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-family: var(--mono);
+}
+.conclusion-statement {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
 /* ─── RESPONSIVE BREAKPOINTS ─── */
 @media (max-width: 1100px) {
   .hero { grid-template-columns: 1fr; min-height: auto; padding: 40px; }

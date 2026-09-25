@@ -1726,9 +1726,9 @@ button, select, input { font: inherit; }
   border-radius: 7px;
   display: flex;
   align-items: center;
-  padding: 0 14px;
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: fit-content;
+  padding: 0 12px;
+  transition: width 0.15s ease-out;
+  overflow: hidden;
 }
 .tam-gradient {
   background: linear-gradient(90deg, var(--accent) 0%, #0284c7 100%);

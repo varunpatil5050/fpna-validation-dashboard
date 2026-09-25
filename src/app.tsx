@@ -1038,8 +1038,8 @@ function OpportunityModel() {
                 <span className="stage-val">₹{tamCr} Cr</span>
               </div>
               <div className="waterfall-bar-outer">
-                <div className="waterfall-bar-inner tam-gradient" style={{ width: "100%" }}>
-                  <span className="bar-inner-text">2,000 Firms</span>
+                <div className="waterfall-bar-inner tam-gradient" style={{ width: `${tamScalePct}%` }}>
+                  <span className="bar-inner-text">{arrPerCustomer >= 2.5 ? "2,000 Firms" : "2k"}</span>
                 </div>
               </div>
             </div>

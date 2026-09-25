@@ -257,7 +257,8 @@ button, select, input { font: inherit; }
 
 /* ─── HERO SECTION (CLEAN EDITORIAL TECH) ─── */
 .hero {
-  margin-top: 24px;
+  margin-top: 32px;
+  margin-bottom: 24px;
   border-radius: var(--radius2);
   padding: 56px 48px;
   display: grid;
@@ -339,15 +340,16 @@ button, select, input { font: inherit; }
 
 /* ─── SECTIONS ─── */
 .section {
-  padding-top: 72px;
-  scroll-margin-top: 70px;
+  padding-top: 104px;
+  padding-bottom: 16px;
+  scroll-margin-top: 80px;
 }
 .section-head {
   display: grid;
   grid-template-columns: 0.85fr 1.15fr;
-  gap: 40px;
+  gap: 48px;
   align-items: start;
-  margin-bottom: 32px;
+  margin-bottom: 38px;
 }
 .sec-num {
   font-size: 11px;
@@ -377,7 +379,7 @@ button, select, input { font: inherit; }
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius);
-  padding: 28px 36px;
+  padding: 32px 38px;
   display: block;
   background: var(--surface);
   position: relative;
@@ -424,10 +426,10 @@ button, select, input { font: inherit; }
 .presets-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
   padding-bottom: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   scrollbar-width: none;
 }
 .presets-bar::-webkit-scrollbar { display: none; }
@@ -476,11 +478,11 @@ button, select, input { font: inherit; }
 /* ─── CONTROLS PANEL ─── */
 .controls {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: flex-end;
   flex-wrap: wrap;
-  margin-bottom: 20px;
-  padding: 18px 20px;
+  margin-bottom: 26px;
+  padding: 20px 22px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -557,13 +559,13 @@ button, select, input { font: inherit; }
 .primary-kpis {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 .primary-card {
   border-radius: var(--radius);
-  padding: 28px 24px;
-  min-height: 180px;
+  padding: 30px 26px;
+  min-height: 185px;
   position: relative;
   border: 1px solid var(--border);
   transition: border-color 0.2s ease, transform 0.2s ease;
@@ -602,14 +604,14 @@ button, select, input { font: inherit; }
 .secondary-kpis {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 .metric {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 18px;
-  min-height: 130px;
+  padding: 20px;
+  min-height: 135px;
   transition: border-color 0.2s ease, transform 0.2s ease;
   cursor: default;
   position: relative;
@@ -645,14 +647,14 @@ button, select, input { font: inherit; }
 .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 24px;
+  margin-top: 24px;
 }
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 28px;
   min-width: 0;
   position: relative;
   box-shadow: var(--shadow2);
@@ -668,7 +670,7 @@ button, select, input { font: inherit; }
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .card h3 {
   font-size: 16px;
@@ -796,13 +798,13 @@ button, select, input { font: inherit; }
 .hyp-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 .hyp-row-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 18px 24px;
+  border-radius: var(--radius);
+  padding: 22px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1144,11 +1146,11 @@ button, select, input { font: inherit; }
 .proposition {
   display: grid;
   grid-template-columns: 0.95fr 1.05fr;
-  gap: 36px;
+  gap: 44px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius2);
-  padding: 40px;
+  padding: 44px;
   box-shadow: var(--shadow);
 }
 .proposition h3 {
@@ -1543,7 +1545,7 @@ button, select, input { font: inherit; }
 .opportunity-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 30px;
 }
 
 /* Simulation Toolbar & Scenario Presets */
@@ -1750,7 +1752,7 @@ button, select, input { font: inherit; }
 .opportunity-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 24px;
 }
 .assumptions-card {
   display: flex;
@@ -1759,7 +1761,7 @@ button, select, input { font: inherit; }
 .sliders-list {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 26px;
   margin-top: 6px;
 }
 .slider-block {
@@ -1988,7 +1990,7 @@ button, select, input { font: inherit; }
 .product-thesis-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 /* Proposition Architecture Hero Banner */
@@ -1996,10 +1998,10 @@ button, select, input { font: inherit; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius2);
-  padding: 38px 40px;
+  padding: 44px;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  gap: 40px;
+  gap: 44px;
   align-items: center;
   box-shadow: var(--shadow);
   position: relative;

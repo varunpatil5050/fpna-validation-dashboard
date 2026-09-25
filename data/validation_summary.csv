@@ -1,0 +1,9 @@
+Hypothesis,X,Y,Spearman_rho,p_value,Linear_R2
+H1,Q_Exact_Source_System_Count,Q_FP&A_Time_on_Data_Preparation_Pct,0.70267002135846,1.2450279151400688e-06,0.4847945880583667
+H2,Q_Manual_Data_Transfers_Per_Cycle,Q_Data_Related_Additional_Delay_Days,0.7664454304728991,3.202356056689753e-08,0.5878895856960318
+H3,Q_Spreadsheet_Dependency_1to5,Q_Manual_Correction_Frequency_1to5,0.8542229184049095,1.771654123321316e-11,0.6785446407411665
+H4,Q_Reconciliation_Hours_Per_Month,Q_Reporting_Lag_Business_Days,0.777661793584827,1.49191662997811e-08,0.5543329302461727
+H5,Q_Discrepancy_Frequency_1to5,Q_Forecast_Revision_Frequency_1to5,0.7976336905518545,3.413558101263879e-09,0.5124828225169593
+H6,Derived_Integration_Gap_1to5,Q_Exact_Consolidation_Team_Hours_Per_Month,0.7181997265830936,5.596243638490047e-07,0.5599774101740853
+H7,Q_FP&A_Time_on_Data_Preparation_Pct,Q_Strategic_Time_Limitation_1to5,0.6421875363994226,1.830581970510353e-05,0.3548337606835374
+H8,Operational burden index,Q_Improvement_Priority_1to5,0.7613089946611531,4.48067936501948e-08,0.5301838990801426

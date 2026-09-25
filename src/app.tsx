@@ -183,6 +183,21 @@ const Icons = {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <polyline points="9 18 15 12 9 6" />
     </svg>
+  ),
+  Layers: ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  ),
+  Refresh: ({ size = 13, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+      <path d="M16 21h5v-5" />
+    </svg>
   )
 };
 
@@ -798,140 +813,139 @@ function ExecutiveDrawer({ row, cohortData, onClose, onPrev, onNext }: any) {
 
 // ─── MODEL THE OPPORTUNITY (TAM / SAM / SOM + UNIT ECONOMICS) ───
 function OpportunityModel() {
-  const [arrPerCustomer, setArrPerCustomer] = useState(3); // in Lakhs
+  const [arrPerCustomer, setArrPerCustomer] = useState(3.0); // in Lakhs
   const [serviceableFirms, setServiceableFirms] = useState(600);
   const [yearOneCustomers, setYearOneCustomers] = useState(12);
 
-  const resetAssumptions = () => {
+  const applyPreset = (arr: number, firms: number, customers: number) => {
     sounds.playPop();
-    setArrPerCustomer(3);
-    setServiceableFirms(600);
-    setYearOneCustomers(12);
+    setArrPerCustomer(arr);
+    setServiceableFirms(firms);
+    setYearOneCustomers(customers);
   };
 
   // Calculations
   // Total addressable: 2,000 target firms * arrPerCustomer Lakhs = (2000 * arr) / 100 Cr
   const tamCr = ((2000 * arrPerCustomer) / 100).toFixed(arrPerCustomer % 1 === 0 ? 0 : 1);
-  const samCr = ((serviceableFirms * arrPerCustomer) / 100).toFixed(arrPerCustomer % 1 === 0 && (serviceableFirms * arrPerCustomer) % 100 === 0 ? 0 : 1);
+  const samCr = ((serviceableFirms * arrPerCustomer) / 100).toFixed(
+    arrPerCustomer % 1 === 0 && (serviceableFirms * arrPerCustomer) % 100 === 0 ? 0 : 1
+  );
   const somCr = ((yearOneCustomers * arrPerCustomer) / 100).toFixed(2);
 
-  const tamNum = (2000 * arrPerCustomer) / 100;
   const samNum = (serviceableFirms * arrPerCustomer) / 100;
   const somNum = (yearOneCustomers * arrPerCustomer) / 100;
 
-  // Logarithmic height helper for [0.01, 100] range
-  const getLogHeight = (val: number) => {
-    const minLog = Math.log10(0.01); // -2
-    const maxLog = Math.log10(100);  // 2
-    const logVal = Math.log10(Math.max(0.01, val));
-    const pct = ((logVal - minLog) / (maxLog - minLog)) * 100;
-    return Math.min(100, Math.max(10, pct));
-  };
+  const samPenetrationPct = ((serviceableFirms / 2000) * 100).toFixed(0);
+  const somPenetrationPct = ((yearOneCustomers / serviceableFirms) * 100).toFixed(1);
 
   return (
     <div className="opportunity-section">
-      {/* Section Head */}
-      <div className="opportunity-head">
-        <div>
-          <h2 className="opportunity-title">
-            Model the <em>opportunity.</em>
-          </h2>
-          <p className="opportunity-subtitle">
-            A transparent starting point for the India B2B SaaS segment.
-          </p>
+      {/* Simulation Toolbar / Presets */}
+      <div className="opportunity-toolbar">
+        <div className="toolbar-info">
+          <span className="live-pulse-dot" />
+          <span>Interactive Market Sizing · Mid-Market B2B SaaS Segment</span>
         </div>
-        <span className="illustrative-tag">Illustrative scenario</span>
-      </div>
-
-      {/* Info Notice Banner */}
-      <div className="info-banner">
-        <Icons.Info size={15} />
-        <span>Adjust the assumptions to explore market size. These are planning scenarios, not validated market estimates.</span>
+        <div className="preset-btn-group">
+          <span className="preset-label">Scenarios:</span>
+          <button
+            className={`preset-chip ${arrPerCustomer === 2 && serviceableFirms === 400 && yearOneCustomers === 8 ? "active" : ""}`}
+            onClick={() => applyPreset(2, 400, 8)}
+          >
+            Conservative
+          </button>
+          <button
+            className={`preset-chip ${arrPerCustomer === 3 && serviceableFirms === 600 && yearOneCustomers === 12 ? "active" : ""}`}
+            onClick={() => applyPreset(3, 600, 12)}
+          >
+            Base Case
+          </button>
+          <button
+            className={`preset-chip ${arrPerCustomer === 5 && serviceableFirms === 1000 && yearOneCustomers === 25 ? "active" : ""}`}
+            onClick={() => applyPreset(5, 1000, 25)}
+          >
+            Aggressive
+          </button>
+          <button
+            className="preset-chip reset-chip"
+            onClick={() => applyPreset(3, 600, 12)}
+            title="Reset to default baseline"
+          >
+            <Icons.Refresh size={11} /> Reset
+          </button>
+        </div>
       </div>
 
       {/* Top 3 TAM / SAM / SOM Cards */}
       <div className="market-kpi-grid">
-        <div className="market-kpi-card tam-card">
-          <span className="kpi-eyebrow">TOTAL ADDRESSABLE · TAM</span>
-          <div className="kpi-val">₹{tamCr} <small>Cr</small></div>
-          <span className="kpi-sub">2,000 target firms × ₹{arrPerCustomer}L ARR</span>
+        <div className="market-kpi-card">
+          <div className="kpi-card-header">
+            <span className="kpi-eyebrow">01 · TOTAL ADDRESSABLE MARKET</span>
+            <span className="kpi-pill">TAM</span>
+          </div>
+          <div className="kpi-val">
+            ₹{tamCr} <span className="kpi-unit">Cr</span>
+          </div>
+          <div className="kpi-sub">
+            2,000 target firms × ₹{arrPerCustomer.toFixed(1)}L ARR
+          </div>
+          <div className="kpi-bar-track">
+            <div className="kpi-bar-fill tam-fill" style={{ width: "100%" }} />
+          </div>
+          <span className="kpi-footnote">Full universe of Indian SaaS firms with multiple revenue systems</span>
         </div>
 
         <div className="market-kpi-card">
-          <span className="kpi-eyebrow">SERVICEABLE · SAM</span>
-          <div className="kpi-val">₹{samCr} <small>Cr</small></div>
-          <span className="kpi-sub">{serviceableFirms.toLocaleString()} serviceable firms × ₹{arrPerCustomer}L ARR</span>
+          <div className="kpi-card-header">
+            <span className="kpi-eyebrow">02 · SERVICEABLE ADDRESSABLE MARKET</span>
+            <span className="kpi-pill">SAM</span>
+          </div>
+          <div className="kpi-val">
+            ₹{samCr} <span className="kpi-unit">Cr</span>
+          </div>
+          <div className="kpi-sub">
+            {serviceableFirms.toLocaleString()} serviceable firms × ₹{arrPerCustomer.toFixed(1)}L ARR
+          </div>
+          <div className="kpi-bar-track">
+            <div className="kpi-bar-fill sam-fill" style={{ width: `${Math.min(100, Math.max(10, (serviceableFirms / 2000) * 100))}%` }} />
+          </div>
+          <span className="kpi-footnote">{samPenetrationPct}% of TAM · High fragmentation & reconciliation friction</span>
         </div>
 
-        <div className="market-kpi-card">
-          <span className="kpi-eyebrow">YEAR-ONE TARGET · SOM</span>
-          <div className="kpi-val">₹{somCr} <small>Cr</small></div>
-          <span className="kpi-sub">{yearOneCustomers} paying firms × ₹{arrPerCustomer}L ARR</span>
+        <div className="market-kpi-card som-card">
+          <div className="kpi-card-header">
+            <span className="kpi-eyebrow">03 · YEAR-ONE BEACHHEAD</span>
+            <span className="kpi-pill som-pill">SOM</span>
+          </div>
+          <div className="kpi-val som-val">
+            ₹{somCr} <span className="kpi-unit">Cr</span>
+          </div>
+          <div className="kpi-sub">
+            {yearOneCustomers} winning accounts × ₹{arrPerCustomer.toFixed(1)}L ARR
+          </div>
+          <div className="kpi-bar-track">
+            <div className="kpi-bar-fill som-fill" style={{ width: `${Math.min(100, Math.max(6, (yearOneCustomers / 100) * 100))}%` }} />
+          </div>
+          <span className="kpi-footnote">{somPenetrationPct}% of SAM · Initial go-to-market beachhead target</span>
         </div>
       </div>
 
       {/* Interactive Exploration Sandbox */}
       <div className="opportunity-grid">
-        {/* Left Column: Logarithmic Chart */}
-        <div className="card log-chart-card">
+        {/* Left Column: Interactive Sliders */}
+        <div className="card assumptions-card">
           <div className="card-head">
             <div>
-              <h3>From market to first customers</h3>
-              <p>Annual recurring value in ₹ crore · logarithmic scale</p>
+              <h3>Calibrate Market Assumptions</h3>
+              <p>Adjust commercial levers to simulate revenue capacity</p>
             </div>
-          </div>
-
-          <div className="log-chart-wrap">
-            <div className="log-y-axis">
-              <span>100</span>
-              <span>10</span>
-              <span>1</span>
-              <span>0.1</span>
-              <span>0.01</span>
-            </div>
-
-            <div className="log-bars-container">
-              <div className="log-grid-line" style={{ bottom: "100%" }}></div>
-              <div className="log-grid-line" style={{ bottom: "75%" }}></div>
-              <div className="log-grid-line" style={{ bottom: "50%" }}></div>
-              <div className="log-grid-line" style={{ bottom: "25%" }}></div>
-              <div className="log-grid-line" style={{ bottom: "0%" }}></div>
-
-              <div className="log-bar-col">
-                <div className="log-bar-val">₹{tamCr} Cr</div>
-                <div className="log-bar bar-tam" style={{ height: `${getLogHeight(tamNum)}%` }} />
-                <span className="log-bar-label">TAM</span>
-              </div>
-
-              <div className="log-bar-col">
-                <div className="log-bar-val">₹{samCr} Cr</div>
-                <div className="log-bar bar-sam" style={{ height: `${getLogHeight(samNum)}%` }} />
-                <span className="log-bar-label">SAM</span>
-              </div>
-
-              <div className="log-bar-col">
-                <div className="log-bar-val">₹{somCr} Cr</div>
-                <div className="log-bar bar-som" style={{ height: `${getLogHeight(somNum)}%` }} />
-                <span className="log-bar-label">SOM · Year 1</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Interactive Sliders */}
-        <div className="card assumptions-card">
-          <div className="assumptions-header">
-            <h3>Explore the assumptions</h3>
-            <button className="reset-btn" onClick={resetAssumptions} title="Reset to baseline scenario">
-              Reset
-            </button>
           </div>
 
           <div className="sliders-list">
             <div className="slider-block">
               <div className="slider-meta">
-                <span className="slider-title">ARR per customer</span>
-                <b className="slider-val">₹{arrPerCustomer} lakh</b>
+                <span className="slider-title">Annual Contract Value (ARR / Customer)</span>
+                <b className="slider-val">₹{arrPerCustomer.toFixed(1)} Lakh</b>
               </div>
               <input
                 type="range"
@@ -946,15 +960,17 @@ function OpportunityModel() {
                 className="custom-range"
               />
               <div className="slider-ticks">
-                <span>₹1 lakh</span>
-                <span>₹10 lakh</span>
+                <span>₹1 Lakh</span>
+                <span>₹5 Lakh (Mid-Market)</span>
+                <span>₹10 Lakh</span>
               </div>
+              <span className="slider-hint">Standard annual subscription for finance reconciliation automation</span>
             </div>
 
             <div className="slider-block">
               <div className="slider-meta">
-                <span className="slider-title">Serviceable firms</span>
-                <b className="slider-val">{serviceableFirms}</b>
+                <span className="slider-title">Serviceable Target Accounts (SAM)</span>
+                <b className="slider-val">{serviceableFirms.toLocaleString()} firms</b>
               </div>
               <input
                 type="range"
@@ -970,14 +986,16 @@ function OpportunityModel() {
               />
               <div className="slider-ticks">
                 <span>100 firms</span>
-                <span>2,000 firms</span>
+                <span>1,000 firms</span>
+                <span>2,000 firms (Max)</span>
               </div>
+              <span className="slider-hint">Target companies with &gt;4 disparate source systems and close drag</span>
             </div>
 
             <div className="slider-block">
               <div className="slider-meta">
-                <span className="slider-title">Year-one customers</span>
-                <b className="slider-val">{yearOneCustomers}</b>
+                <span className="slider-title">Year-One Beachhead Wins (SOM)</span>
+                <b className="slider-val">{yearOneCustomers} customers</b>
               </div>
               <input
                 type="range"
@@ -993,18 +1011,101 @@ function OpportunityModel() {
               />
               <div className="slider-ticks">
                 <span>1 customer</span>
+                <span>50 customers</span>
                 <span>100 customers</span>
+              </div>
+              <span className="slider-hint">Conservative initial year acquisition target via direct founder sales</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Market Value Progression Waterfall */}
+        <div className="card log-chart-card">
+          <div className="card-head">
+            <div>
+              <h3>Value Realization Waterfall</h3>
+              <p>Conversion from total addressable universe to Year 1 run rate</p>
+            </div>
+          </div>
+
+          <div className="funnel-waterfall-wrap">
+            <div className="waterfall-stage">
+              <div className="waterfall-stage-header">
+                <span className="stage-name">TAM · Total Universe</span>
+                <span className="stage-val">₹{tamCr} Cr</span>
+              </div>
+              <div className="waterfall-bar-outer">
+                <div className="waterfall-bar-inner tam-gradient" style={{ width: "100%" }}>
+                  <span className="bar-inner-text">2,000 Firms</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="waterfall-conversion-bridge">
+              <span>↓ {samPenetrationPct}% addressable fit based on source complexity</span>
+            </div>
+
+            <div className="waterfall-stage">
+              <div className="waterfall-stage-header">
+                <span className="stage-name">SAM · Serviceable Market</span>
+                <span className="stage-val">₹{samCr} Cr</span>
+              </div>
+              <div className="waterfall-bar-outer">
+                <div
+                  className="waterfall-bar-inner sam-gradient"
+                  style={{ width: `${Math.min(100, Math.max(16, (serviceableFirms / 2000) * 100))}%` }}
+                >
+                  <span className="bar-inner-text">{serviceableFirms.toLocaleString()} Firms</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="waterfall-conversion-bridge">
+              <span>↓ {somPenetrationPct}% Year 1 penetration rate</span>
+            </div>
+
+            <div className="waterfall-stage">
+              <div className="waterfall-stage-header">
+                <span className="stage-name">SOM · Year 1 Target</span>
+                <span className="stage-val som-val">₹{somCr} Cr</span>
+              </div>
+              <div className="waterfall-bar-outer">
+                <div
+                  className="waterfall-bar-inner som-gradient"
+                  style={{ width: `${Math.min(100, Math.max(10, (yearOneCustomers / 100) * 100))}%` }}
+                >
+                  <span className="bar-inner-text">{yearOneCustomers} Wins</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Run Rate Summary */}
+            <div className="waterfall-summary-strip">
+              <div className="summary-pill">
+                <span>Monthly Run-rate:</span>
+                <b>₹{((somNum * 100) / 12).toFixed(1)} L/mo</b>
+              </div>
+              <div className="summary-pill">
+                <span>Quarterly Cadence:</span>
+                <b>{Math.ceil(yearOneCustomers / 4)} wins / qtr</b>
+              </div>
+              <div className="summary-pill">
+                <span>Avg Contract:</span>
+                <b>₹{arrPerCustomer.toFixed(1)} L/yr</b>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Unit Economics Source Scenario */}
+      {/* Unit Economics Section */}
       <div className="unit-economics-section">
         <div className="unit-economics-head">
-          <h4>Unit economics · source scenario</h4>
-          <span>Fixed assumptions · independent of sliders</span>
+          <div>
+            <h4>Commercial Unit Economics · Baseline Model</h4>
+            <p>Direct sales motion with inside-sales discovery and self-serve onboarding</p>
+          </div>
+          <span className="status-chip">Commercial Scenario</span>
         </div>
 
         <div className="unit-economics-grid">
@@ -1023,31 +1124,35 @@ function OpportunityModel() {
           <div className="unit-card">
             <span className="unit-label">Gross margin</span>
             <div className="unit-val">74%</div>
-            <span className="unit-sub">Commercial scenario</span>
+            <span className="unit-sub">Pure SaaS delivery</span>
           </div>
 
           <div className="unit-card">
             <span className="unit-label">EBITDA margin</span>
             <div className="unit-val">21%</div>
-            <span className="unit-sub">Scaled operating scenario</span>
+            <span className="unit-sub">Scaled operating target</span>
           </div>
 
           <div className="unit-card">
             <span className="unit-label">LTV / CAC</span>
             <div className="unit-val">5.1×</div>
-            <span className="unit-sub">Source model assumption</span>
+            <span className="unit-sub">Capital efficiency ratio</span>
           </div>
 
           <div className="unit-card">
             <span className="unit-label">CAC payback</span>
             <div className="unit-val">4.6 <small>mo</small></div>
-            <span className="unit-sub">Source model assumption</span>
+            <span className="unit-sub">Cash breakeven velocity</span>
           </div>
         </div>
 
-        <div className="unit-disclaimer-card">
-          <Icons.ShieldCheck size={18} className="shield-icon" />
-          <span>Validate acquisition cost, retention cost and margins through paid pilots. The original dashboard supplies these unit economics as a separate scenario, without the underlying cash-flow assumptions.</span>
+        <div className="research-note" style={{ marginTop: 8 }}>
+          <b>
+            <Icons.ShieldCheck size={14} /> Commercial Model Validation
+          </b>
+          <span>
+            Unit economics assume an inside-sales discovery motion coupled with rapid self-serve connector onboarding. Validate blended CAC, net revenue retention, and implementation cycle times through initial paid pilot deployments before committing scale outbound GTM capital.
+          </span>
         </div>
       </div>
     </div>
@@ -1134,72 +1239,110 @@ function ProductThesis() {
 
   return (
     <div className="product-thesis-section">
-      {/* Header */}
-      <div className="thesis-head">
-        <div className="eyebrow" style={{ color: "#6366f1" }}>PRODUCT THESIS / 04</div>
-        <h2 className="thesis-title">
-          From fragmented to <em>finance-ready.</em>
-        </h2>
-        <p className="thesis-subtitle">
-          A finance-owned reconciliation and data-preparation layer.
-        </p>
-      </div>
-
-      {/* Proposition Hero Banner with Diagram */}
+      {/* Proposition Hero Architecture Showcase */}
       <div className="proposition-hero-banner">
         <div className="proposition-copy-col">
-          <span className="prop-badge">THE PROPOSITION</span>
+          <span className="prop-badge">Strategic Product Architecture</span>
           <h3 className="prop-heading">
             Give finance a trusted foundation for every decision.
           </h3>
           <p className="prop-body">
-            Connect business systems, standardize finance definitions, resolve exceptions and preserve source lineage. Then push approved data into the Excel and Sheets workflows FP&A teams already use.
+            Connect business systems, standardize finance definitions, resolve exceptions, and preserve source lineage. Then push approved data directly into the Excel and Sheets workflows FP&A teams already use.
           </p>
-        </div>
 
-        {/* Right architectural diagram */}
-        <div className="proposition-diagram-col">
-          <div className="diag-kicker">SOURCE → CONTROL → CONFIDENCE</div>
-
-          <div className="diag-sources-row">
-            <span className="diag-source-pill">ERP</span>
-            <span className="diag-source-pill">CRM</span>
-            <span className="diag-source-pill">HR</span>
-            <span className="diag-source-pill">Billing</span>
-          </div>
-
-          <div className="diag-connector-lines"></div>
-
-          <div className="diag-reconcile-card">
-            <div className="reconcile-card-left">
-              <span className="rupee-icon-box">₹</span>
+          <div className="prop-pillars-list">
+            <div className="prop-pillar-item">
+              <span className="pillar-bullet">✓</span>
               <div>
-                <b>Reconciliation</b>
-                <span>A single, governed ledger</span>
+                <b>Zero Workflow Disruption</b>
+                <span>Financial analysts retain their battle-tested spreadsheet models and formulas.</span>
               </div>
             </div>
-            <span className="reconcile-arrow">↗</span>
+            <div className="prop-pillar-item">
+              <span className="pillar-bullet">✓</span>
+              <div>
+                <b>Automated Reconciliation</b>
+                <span>Multi-way automated transaction matching eliminates manual VLOOKUP drag.</span>
+              </div>
+            </div>
+            <div className="prop-pillar-item">
+              <span className="pillar-bullet">✓</span>
+              <div>
+                <b>Immutable Audit Trail</b>
+                <span>Cryptographic transaction-to-cell provenance guarantees statutory audit readiness.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Architecture Pipeline Visual */}
+        <div className="proposition-diagram-col">
+          <div className="diag-kicker">DATA FLOW ARCHITECTURE</div>
+
+          {/* Layer 1: Sources */}
+          <div className="diag-layer-box">
+            <span className="diag-box-label">SOURCE BUSINESS SYSTEMS</span>
+            <div className="diag-sources-row">
+              <span className="diag-source-pill">ERP</span>
+              <span className="diag-source-pill">CRM</span>
+              <span className="diag-source-pill">Billing</span>
+              <span className="diag-source-pill">HRIS</span>
+              <span className="diag-source-pill">Banks</span>
+            </div>
           </div>
 
-          <div className="diag-connector-stem-short"></div>
-
-          <div className="diag-output-pill">
-            <Icons.Check size={12} />
-            <span>Finance-ready data</span>
-            <span className="output-arrow">→</span>
+          {/* Connector */}
+          <div className="diag-flow-connector">
+            <div className="flow-line" />
+            <span className="flow-badge">Automated Ingestion</span>
           </div>
 
-          <div className="diag-subtools">
-            Excel / Sheets · BI · Planning
+          {/* Layer 2: Governed Reconciliation Core */}
+          <div className="diag-reconcile-card">
+            <div className="reconcile-card-left">
+              <div className="rupee-icon-box">
+                <Icons.Layers size={16} />
+              </div>
+              <div>
+                <b>Finance-Owned Reconciliation Core</b>
+                <span>Rule-based matching · Exception quarantine · Lineage log</span>
+              </div>
+            </div>
+            <span className="reconcile-status-badge">● Active Governance</span>
+          </div>
+
+          {/* Connector */}
+          <div className="diag-flow-connector">
+            <div className="flow-line" />
+            <span className="flow-badge">Live Bi-Directional Sync</span>
+          </div>
+
+          {/* Layer 3: Destinations */}
+          <div className="diag-layer-box output-layer">
+            <span className="diag-box-label">FINANCE-READY DESTINATIONS</span>
+            <div className="diag-sources-row">
+              <span className="diag-dest-pill">
+                <Icons.Check size={11} /> Excel Add-In
+              </span>
+              <span className="diag-dest-pill">
+                <Icons.Check size={11} /> Google Sheets
+              </span>
+              <span className="diag-dest-pill">
+                <Icons.Check size={11} /> Executive BI
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Five Governed Workflow Stages */}
+      {/* Governed Workflow Stages */}
       <div className="workflow-stages-wrap">
         <div className="workflow-head">
-          <h3>One governed workflow, end to end.</h3>
-          <span className="select-stage-hint">Select a stage to explore</span>
+          <div>
+            <h3>One Governed Workflow, End to End</h3>
+            <p>Select any stage to inspect operational specifications and business outcomes</p>
+          </div>
+          <span className="select-stage-hint">5-Stage Sequential Pipeline</span>
         </div>
 
         {/* 5 Stage Tabs */}
@@ -1215,7 +1358,10 @@ function ProductThesis() {
                   setActiveStageId(s.id);
                 }}
               >
-                <span className="stage-num-badge">{s.id}</span>
+                <div className="stage-tab-top">
+                  <span className="stage-num-badge">{s.id}</span>
+                  {isActive && <span className="active-dot" />}
+                </div>
                 <div className="stage-tab-meta">
                   <b>{s.label}</b>
                   <span>{s.sub}</span>
@@ -1231,14 +1377,26 @@ function ProductThesis() {
             <span className="stage-eyebrow">{activeStage.eyebrow}</span>
             <h4 className="stage-detail-title">{activeStage.title}</h4>
             <p className="stage-detail-desc">{activeStage.desc}</p>
+
+            <div className="stage-impact-tag">
+              <span className="impact-lead">Expected Operational Impact:</span>
+              <span className="impact-text">
+                {activeStage.id === "01" && "Zero dependency on internal engineering backlogs or ad-hoc data requests"}
+                {activeStage.id === "02" && "Eliminates metric discrepancies across marketing, sales, and billing silos"}
+                {activeStage.id === "03" && "Recovers up to 85% of monthly financial close reconciliation cycle time"}
+                {activeStage.id === "04" && "Full statutory and SOX compliance audit readiness with zero prep overhead"}
+                {activeStage.id === "05" && "Delivers verified figures directly into native financial spreadsheet models"}
+              </span>
+            </div>
           </div>
 
           <div className="stage-detail-right">
+            <div className="points-header">Key Architectural Deliverables</div>
             <div className="stage-points-list">
               {activeStage.points.map((pt, i) => (
                 <div key={i} className="stage-point-item">
                   <span className="point-check-icon">
-                    <Icons.Check size={13} />
+                    <Icons.Check size={14} />
                   </span>
                   <span>{pt}</span>
                 </div>
@@ -1792,13 +1950,23 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         </div>
       </section>
 
-      {/* 05 · Model the Opportunity (TAM / SAM / SOM & Unit Economics) */}
+      {/* 05 · Market Opportunity & Unit Economics */}
       <section className="section reveal" id="opportunity">
+        <SectionHead
+          num="05 · Market Opportunity"
+          title="Simulate addressable scale and commercial unit economics."
+          body="Calibrated for mid-market India B2B SaaS. Adjust core operating assumptions to explore TAM, SAM, and SOM expansion alongside commercial unit economics."
+        />
         <OpportunityModel />
       </section>
 
-      {/* 06 · Strategic Product Thesis */}
+      {/* 06 · Strategic Product Proposition */}
       <section className="section reveal" id="thesis">
+        <SectionHead
+          num="06 · Strategic Product Proposition"
+          title="From fragmented systems to finance-ready data."
+          body="A purpose-built, finance-owned reconciliation and data-preparation layer connecting business systems, standardizing definitions, and feeding trusted figures into Excel and Sheets."
+        />
         <ProductThesis />
       </section>
 

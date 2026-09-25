@@ -838,6 +838,9 @@ function OpportunityModel() {
   const samPenetrationPct = ((serviceableFirms / 2000) * 100).toFixed(0);
   const somPenetrationPct = ((yearOneCustomers / serviceableFirms) * 100).toFixed(1);
 
+  // Dynamic scale percentage for TAM relative to maximum ₹10 Lakh ARR scenario (₹200 Cr cap)
+  const tamScalePct = Math.min(100, Math.max(10, (arrPerCustomer / 10) * 100));
+
   return (
     <div className="opportunity-section">
       {/* Simulation Toolbar / Presets */}
@@ -890,9 +893,9 @@ function OpportunityModel() {
             2,000 target firms × ₹{arrPerCustomer.toFixed(1)}L ARR
           </div>
           <div className="kpi-bar-track">
-            <div className="kpi-bar-fill tam-fill" style={{ width: "100%" }} />
+            <div className="kpi-bar-fill tam-fill" style={{ width: `${tamScalePct}%` }} />
           </div>
-          <span className="kpi-footnote">Full universe of Indian SaaS firms with multiple revenue systems</span>
+          <span className="kpi-footnote">Full universe · {tamScalePct.toFixed(0)}% of max potential (₹200 Cr at ₹10L ARR)</span>
         </div>
 
         <div className="market-kpi-card">

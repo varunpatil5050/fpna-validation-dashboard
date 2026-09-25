@@ -657,6 +657,7 @@ button, select, input { font: inherit; }
   position: relative;
   box-shadow: var(--shadow2);
   transition: border-color 0.2s ease;
+  overflow: hidden;
 }
 .card:hover {
   border-color: var(--border2);
@@ -1808,10 +1809,8 @@ button, select, input { font: inherit; }
 .funnel-waterfall-wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   margin-top: 10px;
-  height: 100%;
-  justify-content: space-between;
 }
 .waterfall-stage {
   display: flex;

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "build:standalone": "node scripts/build-standalone.mjs"
+    "build:standalone": "node scripts/build-standalone.mjs",
+    "deploy": "vite build && npx gh-pages -d dist"
   },
   "dependencies": {
     "react": "^18.3.1",

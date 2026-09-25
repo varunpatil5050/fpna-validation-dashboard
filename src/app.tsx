@@ -161,6 +161,19 @@ const Icons = {
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
   ),
+  Info: ({ size = 15, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  ),
+  ShieldCheck: ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  ),
   ChevronLeft: ({ size = 14, className = "" }: { size?: number; className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <polyline points="15 18 9 12 15 6" />
@@ -783,319 +796,457 @@ function ExecutiveDrawer({ row, cohortData, onClose, onPrev, onNext }: any) {
   );
 }
 
-// ─── RESPONDENT DATA EXPLORER (SEARCHABLE TABLE) ───
-function RespondentExplorer({ data, onSelectRow }: { data: any[]; onSelectRow: (r: any) => void }) {
-  const [search, setSearch] = useState("");
-  const [sortKey, setSortKey] = useState("Response_ID");
-  const [sortAsc, setSortAsc] = useState(true);
-  const [filterInterview, setFilterInterview] = useState(false);
+// ─── MODEL THE OPPORTUNITY (TAM / SAM / SOM + UNIT ECONOMICS) ───
+function OpportunityModel() {
+  const [arrPerCustomer, setArrPerCustomer] = useState(3); // in Lakhs
+  const [serviceableFirms, setServiceableFirms] = useState(600);
+  const [yearOneCustomers, setYearOneCustomers] = useState(12);
 
-  const filtered = useMemo(() => {
-    return data.filter((r) => {
-      const q = search.toLowerCase();
-      const matchSearch =
-        r.Response_ID.toLowerCase().includes(q) ||
-        r.Role.toLowerCase().includes(q) ||
-        String(r["Primary_FP&A_Stack"] || "").toLowerCase().includes(q) ||
-        r.Company_Size_Employees.toLowerCase().includes(q);
-      const matchInterview = !filterInterview || r.Q_Willing_Followup_Interview === "Yes";
-      return matchSearch && matchInterview;
-    });
-  }, [data, search, filterInterview]);
-
-  const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      const va = a[sortKey], vb = b[sortKey];
-      const na = +va, nb = +vb;
-      if (!isNaN(na) && !isNaN(nb)) return sortAsc ? na - nb : nb - na;
-      return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
-    });
-  }, [filtered, sortKey, sortAsc]);
-
-  const handleSort = (key: string) => {
+  const resetAssumptions = () => {
     sounds.playPop();
-    if (sortKey === key) setSortAsc(!sortAsc);
-    else {
-      setSortKey(key);
-      setSortAsc(true);
-    }
+    setArrPerCustomer(3);
+    setServiceableFirms(600);
+    setYearOneCustomers(12);
+  };
+
+  // Calculations
+  // Total addressable: 2,000 target firms * arrPerCustomer Lakhs = (2000 * arr) / 100 Cr
+  const tamCr = ((2000 * arrPerCustomer) / 100).toFixed(arrPerCustomer % 1 === 0 ? 0 : 1);
+  const samCr = ((serviceableFirms * arrPerCustomer) / 100).toFixed(arrPerCustomer % 1 === 0 && (serviceableFirms * arrPerCustomer) % 100 === 0 ? 0 : 1);
+  const somCr = ((yearOneCustomers * arrPerCustomer) / 100).toFixed(2);
+
+  const tamNum = (2000 * arrPerCustomer) / 100;
+  const samNum = (serviceableFirms * arrPerCustomer) / 100;
+  const somNum = (yearOneCustomers * arrPerCustomer) / 100;
+
+  // Logarithmic height helper for [0.01, 100] range
+  const getLogHeight = (val: number) => {
+    const minLog = Math.log10(0.01); // -2
+    const maxLog = Math.log10(100);  // 2
+    const logVal = Math.log10(Math.max(0.01, val));
+    const pct = ((logVal - minLog) / (maxLog - minLog)) * 100;
+    return Math.min(100, Math.max(10, pct));
   };
 
   return (
-    <div className="explorer-card reveal">
-      <div className="explorer-header">
+    <div className="opportunity-section">
+      {/* Section Head */}
+      <div className="opportunity-head">
         <div>
-          <h3>Respondent Data Explorer</h3>
-          <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 4 }}>
-            Explore raw survey telemetry, friction scores, and drill into specific responses.
+          <h2 className="opportunity-title">
+            Model the <em>opportunity.</em>
+          </h2>
+          <p className="opportunity-subtitle">
+            A transparent starting point for the India B2B SaaS segment.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div className="search-input-wrap">
-            <span className="search-icon">
-              <Icons.Search size={13} />
-            </span>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search by ID, role, or stack..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <button
-            className={`preset-chip ${filterInterview ? "active" : ""}`}
-            onClick={() => {
-              sounds.playPop();
-              setFilterInterview(!filterInterview);
-            }}
-          >
-            Interview Ready
-          </button>
+        <span className="illustrative-tag">Illustrative scenario</span>
+      </div>
+
+      {/* Info Notice Banner */}
+      <div className="info-banner">
+        <Icons.Info size={15} />
+        <span>Adjust the assumptions to explore market size. These are planning scenarios, not validated market estimates.</span>
+      </div>
+
+      {/* Top 3 TAM / SAM / SOM Cards */}
+      <div className="market-kpi-grid">
+        <div className="market-kpi-card tam-card">
+          <span className="kpi-eyebrow">TOTAL ADDRESSABLE · TAM</span>
+          <div className="kpi-val">₹{tamCr} <small>Cr</small></div>
+          <span className="kpi-sub">2,000 target firms × ₹{arrPerCustomer}L ARR</span>
+        </div>
+
+        <div className="market-kpi-card">
+          <span className="kpi-eyebrow">SERVICEABLE · SAM</span>
+          <div className="kpi-val">₹{samCr} <small>Cr</small></div>
+          <span className="kpi-sub">{serviceableFirms.toLocaleString()} serviceable firms × ₹{arrPerCustomer}L ARR</span>
+        </div>
+
+        <div className="market-kpi-card">
+          <span className="kpi-eyebrow">YEAR-ONE TARGET · SOM</span>
+          <div className="kpi-val">₹{somCr} <small>Cr</small></div>
+          <span className="kpi-sub">{yearOneCustomers} paying firms × ₹{arrPerCustomer}L ARR</span>
         </div>
       </div>
 
-      <div className="table-wrap">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSort("Response_ID")}>ID {sortKey === "Response_ID" && (sortAsc ? "↑" : "↓")}</th>
-              <th onClick={() => handleSort("Role")}>Role {sortKey === "Role" && (sortAsc ? "↑" : "↓")}</th>
-              <th onClick={() => handleSort("Company_Size_Employees")}>Size</th>
-              <th onClick={() => handleSort("Primary_FP&A_Stack")}>Stack</th>
-              <th onClick={() => handleSort("Q_Exact_Source_System_Count")}>Systems {sortKey === "Q_Exact_Source_System_Count" && (sortAsc ? "↑" : "↓")}</th>
-              <th onClick={() => handleSort("Q_FP&A_Time_on_Data_Preparation_Pct")}>Prep % {sortKey === "Q_FP&A_Time_on_Data_Preparation_Pct" && (sortAsc ? "↑" : "↓")}</th>
-              <th onClick={() => handleSort("Q_Exact_Consolidation_Team_Hours_Per_Month")}>Consolidation (h) {sortKey === "Q_Exact_Consolidation_Team_Hours_Per_Month" && (sortAsc ? "↑" : "↓")}</th>
-              <th onClick={() => handleSort("Q_Data_Related_Additional_Delay_Days")}>Delay (d) {sortKey === "Q_Data_Related_Additional_Delay_Days" && (sortAsc ? "↑" : "↓")}</th>
-              <th>Friction Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((r) => {
-              const score = calculateFrictionScore(r);
-              return (
-                <tr
-                  key={r.Response_ID}
-                  onClick={() => {
-                    sounds.playBlip();
-                    onSelectRow(r);
-                  }}
-                >
-                  <td style={{ fontFamily: "var(--mono)", fontWeight: 700, color: "var(--accent)" }}>{r.Response_ID}</td>
-                  <td>{r.Role}</td>
-                  <td>{r.Company_Size_Employees}</td>
-                  <td>{r["Primary_FP&A_Stack"]}</td>
-                  <td style={{ fontFamily: "var(--mono)" }}>{r.Q_Exact_Source_System_Count}</td>
-                  <td style={{ fontFamily: "var(--mono)" }}>{r["Q_FP&A_Time_on_Data_Preparation_Pct"]}%</td>
-                  <td style={{ fontFamily: "var(--mono)" }}>{r.Q_Exact_Consolidation_Team_Hours_Per_Month}h</td>
-                  <td style={{ fontFamily: "var(--mono)", color: +r.Q_Data_Related_Additional_Delay_Days > 2 ? "var(--rose)" : "inherit" }}>
-                    +{r.Q_Data_Related_Additional_Delay_Days}d
-                  </td>
-                  <td>
-                    <span className={`badge ${score >= 70 ? "badge-alert" : score >= 45 ? "badge-warn" : "badge-ok"}`}>
-                      {score}/100
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, fontSize: 11, color: "var(--text3)" }}>
-        <span>Showing {sorted.length} of {data.length} respondents</span>
-        <small>Click any row to open executive inspection drawer</small>
-      </div>
-    </div>
-  );
-}
-
-// ─── INTERACTIVE ROI CALCULATOR (SECTION 05) ───
-function ROICalculator() {
-  const [teamSize, setTeamSize] = useState(5);
-  const [avgSalary, setAvgSalary] = useState(120000);
-  const [hoursPerMonth, setHoursPerMonth] = useState(60);
-
-  const hourlyRate = avgSalary / (52 * 40);
-  const annualPrepCost = Math.round(teamSize * hoursPerMonth * 12 * hourlyRate * 0.4);
-  const hoursRecoveredPerMonth = Math.round(hoursPerMonth * 0.65 * teamSize);
-  const annualHoursSaved = hoursRecoveredPerMonth * 12;
-  const netAnnualGain = Math.round(annualHoursSaved * hourlyRate);
-  const estimatedPlatformCost = 28000;
-  const paybackMonths = Math.max(0.8, (estimatedPlatformCost / (netAnnualGain / 12))).toFixed(1);
-
-  return (
-    <div className="roi-card reveal">
-      <div className="card-head">
-        <div>
-          <h3>FP&A Automation & Time-Recovery ROI Sandbox</h3>
-          <p>Model the operational and financial impact of eliminating manual data consolidation for your finance team.</p>
-        </div>
-        <span className="tag">Interactive ROI</span>
-      </div>
-
-      <div className="roi-grid">
-        <div className="slider-group">
-          <div className="slider-item">
-            <div className="slider-item-head">
-              <span>FP&A Team Size</span>
-              <b>{teamSize} analysts</b>
+      {/* Interactive Exploration Sandbox */}
+      <div className="opportunity-grid">
+        {/* Left Column: Logarithmic Chart */}
+        <div className="card log-chart-card">
+          <div className="card-head">
+            <div>
+              <h3>From market to first customers</h3>
+              <p>Annual recurring value in ₹ crore · logarithmic scale</p>
             </div>
-            <input
-              type="range"
-              min="1"
-              max="20"
-              value={teamSize}
-              onChange={(e) => {
-                sounds.playPop();
-                setTeamSize(+e.target.value);
-              }}
-              className="range-slider"
-            />
           </div>
 
-          <div className="slider-item">
-            <div className="slider-item-head">
-              <span>Average Analyst Compensation</span>
-              <b>${(avgSalary / 1000).toFixed(0)}k / year</b>
+          <div className="log-chart-wrap">
+            <div className="log-y-axis">
+              <span>100</span>
+              <span>10</span>
+              <span>1</span>
+              <span>0.1</span>
+              <span>0.01</span>
             </div>
-            <input
-              type="range"
-              min="70000"
-              max="200000"
-              step="5000"
-              value={avgSalary}
-              onChange={(e) => {
-                sounds.playPop();
-                setAvgSalary(+e.target.value);
-              }}
-              className="range-slider"
-            />
-          </div>
 
-          <div className="slider-item">
-            <div className="slider-item-head">
-              <span>Manual Consolidation & Reconciliation Effort</span>
-              <b>{hoursPerMonth} hours / month</b>
+            <div className="log-bars-container">
+              <div className="log-grid-line" style={{ bottom: "100%" }}></div>
+              <div className="log-grid-line" style={{ bottom: "75%" }}></div>
+              <div className="log-grid-line" style={{ bottom: "50%" }}></div>
+              <div className="log-grid-line" style={{ bottom: "25%" }}></div>
+              <div className="log-grid-line" style={{ bottom: "0%" }}></div>
+
+              <div className="log-bar-col">
+                <div className="log-bar-val">₹{tamCr} Cr</div>
+                <div className="log-bar bar-tam" style={{ height: `${getLogHeight(tamNum)}%` }} />
+                <span className="log-bar-label">TAM</span>
+              </div>
+
+              <div className="log-bar-col">
+                <div className="log-bar-val">₹{samCr} Cr</div>
+                <div className="log-bar bar-sam" style={{ height: `${getLogHeight(samNum)}%` }} />
+                <span className="log-bar-label">SAM</span>
+              </div>
+
+              <div className="log-bar-col">
+                <div className="log-bar-val">₹{somCr} Cr</div>
+                <div className="log-bar bar-som" style={{ height: `${getLogHeight(somNum)}%` }} />
+                <span className="log-bar-label">SOM · Year 1</span>
+              </div>
             </div>
-            <input
-              type="range"
-              min="15"
-              max="140"
-              step="5"
-              value={hoursPerMonth}
-              onChange={(e) => {
-                sounds.playPop();
-                setHoursPerMonth(+e.target.value);
-              }}
-              className="range-slider"
-            />
           </div>
         </div>
 
-        <div className="roi-output-box">
-          <div className="roi-metric-item">
-            <small>Current Annual Financial Drag</small>
-            <b>${annualPrepCost.toLocaleString()}</b>
-          </div>
-          <div className="roi-metric-item roi-highlight">
-            <small>Recovered Strategic Analyst Hours</small>
-            <b>{annualHoursSaved.toLocaleString()} hrs/yr</b>
-          </div>
-          <div className="roi-metric-item roi-highlight">
-            <small>Net Annual Value Reclaimed</small>
-            <b>${netAnnualGain.toLocaleString()}</b>
-          </div>
-          <div className="roi-metric-item">
-            <small>Projected Implementation Payback</small>
-            <b style={{ color: "var(--accent)" }}>{paybackMonths} months</b>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── PRODUCT PROTO MOCK ───
-function ProductMock() {
-  const [tab, setTab] = useState("Exceptions");
-  const tabs = ["Sources", "Exceptions", "Lineage"];
-
-  return (
-    <div className="proto">
-      <div className="proto-head">
-        <b>Month-end data readiness control view</b>
-        <span>Live Schema Telemetry</span>
-      </div>
-      <div className="proto-tabs">
-        {tabs.map((t) => (
-          <button
-            key={t}
-            className={tab === t ? "active" : ""}
-            onClick={() => {
-              sounds.playPop();
-              setTab(t);
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      {tab === "Sources" && (
-        <div className="proto-box">
-          <h4>Active Pipeline Connectors</h4>
-          {["NetSuite ERP (General Ledger)", "Salesforce CRM (Pipeline)", "Stripe (Subscriptions)", "Workday (Headcount)"].map((s) => (
-            <div className="source" key={s}>
-              <span>{s}</span>
-              <span className="ok" style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                <Icons.Check size={11} /> Synced & Reconciled
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-      {tab === "Exceptions" && (
-        <div className="proto-grid">
-          <div className="proto-box">
-            <h4>Reconciliation Rules</h4>
-            <div className="source">
-              <span>Customer ID mapping</span>
-              <span className="warn">12 unmatched</span>
-            </div>
-            <div className="source">
-              <span>Deferred revenue variance</span>
-              <span className="ok">0.00% delta</span>
-            </div>
-            <div className="source">
-              <span>Headcount payroll tie-out</span>
-              <span className="ok">Matched</span>
-            </div>
-          </div>
-          <div className="proto-box">
-            <h4>Recommended Finance Action</h4>
-            <div className="alert">
-              12 Salesforce accounts have no matching ERP customer entity. AI suggested matches are ready for finance sign-off.
-            </div>
-            <button
-              className="approve"
-              onClick={() => sounds.playSuccess()}
-            >
-              Approve 12 Mappings
+        {/* Right Column: Interactive Sliders */}
+        <div className="card assumptions-card">
+          <div className="assumptions-header">
+            <h3>Explore the assumptions</h3>
+            <button className="reset-btn" onClick={resetAssumptions} title="Reset to baseline scenario">
+              Reset
             </button>
           </div>
+
+          <div className="sliders-list">
+            <div className="slider-block">
+              <div className="slider-meta">
+                <span className="slider-title">ARR per customer</span>
+                <b className="slider-val">₹{arrPerCustomer} lakh</b>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="0.5"
+                value={arrPerCustomer}
+                onChange={(e) => {
+                  sounds.playPop();
+                  setArrPerCustomer(+e.target.value);
+                }}
+                className="custom-range"
+              />
+              <div className="slider-ticks">
+                <span>₹1 lakh</span>
+                <span>₹10 lakh</span>
+              </div>
+            </div>
+
+            <div className="slider-block">
+              <div className="slider-meta">
+                <span className="slider-title">Serviceable firms</span>
+                <b className="slider-val">{serviceableFirms}</b>
+              </div>
+              <input
+                type="range"
+                min="100"
+                max="2000"
+                step="50"
+                value={serviceableFirms}
+                onChange={(e) => {
+                  sounds.playPop();
+                  setServiceableFirms(+e.target.value);
+                }}
+                className="custom-range"
+              />
+              <div className="slider-ticks">
+                <span>100 firms</span>
+                <span>2,000 firms</span>
+              </div>
+            </div>
+
+            <div className="slider-block">
+              <div className="slider-meta">
+                <span className="slider-title">Year-one customers</span>
+                <b className="slider-val">{yearOneCustomers}</b>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                value={yearOneCustomers}
+                onChange={(e) => {
+                  sounds.playPop();
+                  setYearOneCustomers(+e.target.value);
+                }}
+                className="custom-range"
+              />
+              <div className="slider-ticks">
+                <span>1 customer</span>
+                <span>100 customers</span>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-      {tab === "Lineage" && (
-        <div className="lineage">
-          <span>SFDC Opp</span>
-          <b>→</b>
-          <span>Customer Entity</span>
-          <b>→</b>
-          <span>NetSuite GL</span>
-          <b>→</b>
-          <span>Finance-Ready Output</span>
+      </div>
+
+      {/* Unit Economics Source Scenario */}
+      <div className="unit-economics-section">
+        <div className="unit-economics-head">
+          <h4>Unit economics · source scenario</h4>
+          <span>Fixed assumptions · independent of sliders</span>
         </div>
-      )}
+
+        <div className="unit-economics-grid">
+          <div className="unit-card">
+            <span className="unit-label">Acquisition cost</span>
+            <div className="unit-val">₹38k</div>
+            <span className="unit-sub">Blended CAC / customer</span>
+          </div>
+
+          <div className="unit-card">
+            <span className="unit-label">Retention cost</span>
+            <div className="unit-val">₹9k<small>/ yr</small></div>
+            <span className="unit-sub">Annual CRC / customer</span>
+          </div>
+
+          <div className="unit-card">
+            <span className="unit-label">Gross margin</span>
+            <div className="unit-val">74%</div>
+            <span className="unit-sub">Commercial scenario</span>
+          </div>
+
+          <div className="unit-card">
+            <span className="unit-label">EBITDA margin</span>
+            <div className="unit-val">21%</div>
+            <span className="unit-sub">Scaled operating scenario</span>
+          </div>
+
+          <div className="unit-card">
+            <span className="unit-label">LTV / CAC</span>
+            <div className="unit-val">5.1×</div>
+            <span className="unit-sub">Source model assumption</span>
+          </div>
+
+          <div className="unit-card">
+            <span className="unit-label">CAC payback</span>
+            <div className="unit-val">4.6 <small>mo</small></div>
+            <span className="unit-sub">Source model assumption</span>
+          </div>
+        </div>
+
+        <div className="unit-disclaimer-card">
+          <Icons.ShieldCheck size={18} className="shield-icon" />
+          <span>Validate acquisition cost, retention cost and margins through paid pilots. The original dashboard supplies these unit economics as a separate scenario, without the underlying cash-flow assumptions.</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PRODUCT THESIS: FROM FRAGMENTED TO FINANCE-READY (SECTION 06) ───
+const STAGES_DATA = [
+  {
+    id: "01",
+    label: "Connect",
+    sub: "Bring sources together",
+    eyebrow: "STAGE 01 / FINANCE-OWNED WORKFLOW",
+    title: "One starting point for every source.",
+    desc: "Bring ERP, CRM, billing, HR, product and warehouse feeds into the same finance-owned workspace without waiting on data engineering sprints or relying on ad-hoc CSV exports.",
+    points: [
+      "Business-system and warehouse feeds",
+      "A shared starting point for the reporting cycle",
+      "Automated ingestion schedules with error alerts",
+      "Native connectors for NetSuite, Salesforce, Stripe & Workday"
+    ]
+  },
+  {
+    id: "02",
+    label: "Standardize",
+    sub: "Make definitions consistent",
+    eyebrow: "STAGE 02 / FINANCE-OWNED WORKFLOW",
+    title: "Make definitions consistent across silos.",
+    desc: "Eliminate chart-of-accounts divergence, conflicting customer IDs, and mismatched subscription metrics before calculations begin. Finance owns and maintains the canonical translation rules.",
+    points: [
+      "Standardized ARR, MRR, and churn logic across CRM & Billing",
+      "Canonical department, cost-center, and headcount mapping",
+      "Configurable entity currency conversions & FX normalization",
+      "Version-controlled transformation rule sets owned directly by finance"
+    ]
+  },
+  {
+    id: "03",
+    label: "Reconcile",
+    sub: "Resolve the differences",
+    eyebrow: "STAGE 03 / FINANCE-OWNED WORKFLOW",
+    title: "Automate reconciliation & isolate discrepancies.",
+    desc: "Match millions of transactions across payment gateways, general ledgers, sub-ledgers, and bank feeds with automated exception detection. Analysts resolve anomalies instead of debugging broken spreadsheets.",
+    points: [
+      "Multi-way variance matching with configurable tolerance thresholds",
+      "Exception quarantine queues with automated escalation workflows",
+      "Elimination of manual VLOOKUP/XLOOKUP spreadsheet formula breakage",
+      "Up to 85% reduction in recurring month-end close latency"
+    ]
+  },
+  {
+    id: "04",
+    label: "Trace & approve",
+    sub: "Build a trail of trust",
+    eyebrow: "STAGE 04 / FINANCE-OWNED WORKFLOW",
+    title: "Build an immutable, auditable trail of trust.",
+    desc: "Every data transformation, manual adjustment, restatement, and override is stamped with permanent cryptographic provenance and formal sign-offs for complete SOX and audit readiness.",
+    points: [
+      "Cell-level lineage tracing back to source transaction raw payloads",
+      "Formal multi-tier sign-off workflows for controllers and VP Finance",
+      "Instant compliance export logs for statutory and board reviews",
+      "Automated diff previews before committing forecast revisions"
+    ]
+  },
+  {
+    id: "05",
+    label: "Publish",
+    sub: "Meet finance where it works",
+    eyebrow: "STAGE 05 / FINANCE-OWNED WORKFLOW",
+    title: "Push verified, finance-ready figures where teams work.",
+    desc: "Deliver governed, reconciled metrics directly into the native Excel models, Google Sheets, planning software, and executive dashboards leadership already relies on.",
+    points: [
+      "Bi-directional live sync with Microsoft Excel & Google Sheets add-ins",
+      "Zero disruption to existing analyst financial models and workflows",
+      "Granular role-based permissions and row-level access control",
+      "Single source of truth across board presentations and investor updates"
+    ]
+  }
+];
+
+function ProductThesis() {
+  const [activeStageId, setActiveStageId] = useState("01");
+  const activeStage = STAGES_DATA.find((s) => s.id === activeStageId) || STAGES_DATA[0];
+
+  return (
+    <div className="product-thesis-section">
+      {/* Header */}
+      <div className="thesis-head">
+        <div className="eyebrow" style={{ color: "#6366f1" }}>PRODUCT THESIS / 04</div>
+        <h2 className="thesis-title">
+          From fragmented to <em>finance-ready.</em>
+        </h2>
+        <p className="thesis-subtitle">
+          A finance-owned reconciliation and data-preparation layer.
+        </p>
+      </div>
+
+      {/* Proposition Hero Banner with Diagram */}
+      <div className="proposition-hero-banner">
+        <div className="proposition-copy-col">
+          <span className="prop-badge">THE PROPOSITION</span>
+          <h3 className="prop-heading">
+            Give finance a trusted foundation for every decision.
+          </h3>
+          <p className="prop-body">
+            Connect business systems, standardize finance definitions, resolve exceptions and preserve source lineage. Then push approved data into the Excel and Sheets workflows FP&A teams already use.
+          </p>
+        </div>
+
+        {/* Right architectural diagram */}
+        <div className="proposition-diagram-col">
+          <div className="diag-kicker">SOURCE → CONTROL → CONFIDENCE</div>
+
+          <div className="diag-sources-row">
+            <span className="diag-source-pill">ERP</span>
+            <span className="diag-source-pill">CRM</span>
+            <span className="diag-source-pill">HR</span>
+            <span className="diag-source-pill">Billing</span>
+          </div>
+
+          <div className="diag-connector-lines"></div>
+
+          <div className="diag-reconcile-card">
+            <div className="reconcile-card-left">
+              <span className="rupee-icon-box">₹</span>
+              <div>
+                <b>Reconciliation</b>
+                <span>A single, governed ledger</span>
+              </div>
+            </div>
+            <span className="reconcile-arrow">↗</span>
+          </div>
+
+          <div className="diag-connector-stem-short"></div>
+
+          <div className="diag-output-pill">
+            <Icons.Check size={12} />
+            <span>Finance-ready data</span>
+            <span className="output-arrow">→</span>
+          </div>
+
+          <div className="diag-subtools">
+            Excel / Sheets · BI · Planning
+          </div>
+        </div>
+      </div>
+
+      {/* Five Governed Workflow Stages */}
+      <div className="workflow-stages-wrap">
+        <div className="workflow-head">
+          <h3>One governed workflow, end to end.</h3>
+          <span className="select-stage-hint">Select a stage to explore</span>
+        </div>
+
+        {/* 5 Stage Tabs */}
+        <div className="stages-tabs-row">
+          {STAGES_DATA.map((s) => {
+            const isActive = s.id === activeStageId;
+            return (
+              <button
+                key={s.id}
+                className={`stage-tab-btn ${isActive ? "active" : ""}`}
+                onClick={() => {
+                  sounds.playPop();
+                  setActiveStageId(s.id);
+                }}
+              >
+                <span className="stage-num-badge">{s.id}</span>
+                <div className="stage-tab-meta">
+                  <b>{s.label}</b>
+                  <span>{s.sub}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Detailed Stage Elaboration Card */}
+        <div className="stage-detail-card">
+          <div className="stage-detail-left">
+            <span className="stage-eyebrow">{activeStage.eyebrow}</span>
+            <h4 className="stage-detail-title">{activeStage.title}</h4>
+            <p className="stage-detail-desc">{activeStage.desc}</p>
+          </div>
+
+          <div className="stage-detail-right">
+            <div className="stage-points-list">
+              {activeStage.points.map((pt, i) => (
+                <div key={i} className="stage-point-item">
+                  <span className="point-check-icon">
+                    <Icons.Check size={13} />
+                  </span>
+                  <span>{pt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1289,9 +1440,8 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
           <a href="#kpis">KPIs</a>
           <a href="#analysis">Analysis</a>
           <a href="#hypotheses">Hypotheses</a>
-          <a href="#explorer">Data Explorer</a>
-          <a href="#roi">ROI Sandbox</a>
-          <a href="#proposition">Proposition</a>
+          <a href="#opportunity">Opportunity</a>
+          <a href="#thesis">Product Thesis</a>
         </nav>
         <div className="header-actions">
           <button className="icon-btn" onClick={toggleSound} title={soundEnabled ? "Mute haptic audio" : "Enable haptic audio"}>
@@ -1300,8 +1450,8 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
           <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
             {theme === "dark" ? <Icons.Sun size={15} /> : <Icons.Moon size={15} />}
           </button>
-          <button className="export-btn" onClick={handleExportBriefing}>
-            <Icons.Clipboard size={14} /> Export Briefing
+          <button className="export-btn" onClick={handleDownloadCSV} title="Export full cohort survey dataset (CSV)">
+            <Icons.Download size={14} /> Export data
           </button>
         </div>
       </header>
@@ -1472,8 +1622,46 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         <SectionHead
           num="03 · In-Depth Empirical Analysis"
           title="Structural drivers, workflow friction, and empirical exceptions."
-          body="Switch chart views to inspect specific hypotheses. Click any point on the scatter plot or table to open the comprehensive respondent profile."
+          body="Switch chart views to inspect specific hypotheses. Click any point on the scatter plot to open the comprehensive respondent profile."
         />
+
+        {/* Descriptive Findings Card: "What the evidence suggests" */}
+        <div className="evidence-summary-card reveal">
+          <h3>What the evidence suggests</h3>
+          <div className="evidence-list">
+            <div className="evidence-item">
+              <span className="evidence-num">01</span>
+              <div className="evidence-text">
+                <b>Fragmentation creates work</b>
+                <p>Systems and manual effort move together (r = 0.74); the fitted relationship adds about 5.3 hours per source system.</p>
+              </div>
+            </div>
+
+            <div className="evidence-item">
+              <span className="evidence-num">02</span>
+              <div className="evidence-text">
+                <b>Manual work travels downstream</b>
+                <p>Reporting lag has the strongest tested link to effort (r = 0.88; R² = 0.78).</p>
+              </div>
+            </div>
+
+            <div className="evidence-item">
+              <span className="evidence-num">03</span>
+              <div className="evidence-text">
+                <b>Workflow automation is the opportunity</b>
+                <p>Automation maturity is negatively associated with manual hours (r = −0.34).</p>
+              </div>
+            </div>
+
+            <div className="evidence-item">
+              <span className="evidence-num">04</span>
+              <div className="evidence-text">
+                <b>Qualify for recurring pain</b>
+                <p>Severity and willingness to pay are positively associated (point-biserial r = 0.42).</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {chartData.length < 8 && (
           <div className="warning">
@@ -1492,6 +1680,10 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
               <span className="tag">Prevalence</span>
             </div>
             <HorizontalBars data={prevalenceData} />
+            <div className="graph-conclusion-strip">
+              <span className="conclusion-bullet">•</span>
+              <span>83.8% of surveyed finance teams report collection and spreadsheet consolidation as their primary operational bottleneck.</span>
+            </div>
           </div>
 
           <div className="card">
@@ -1503,6 +1695,10 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
               <span className="tag">Workflow</span>
             </div>
             <AutomationBars data={chartData} />
+            <div className="graph-conclusion-strip">
+              <span className="conclusion-bullet">•</span>
+              <span>Automation maturity is negatively associated with manual hours (r = −0.34), recovering ~38 monthly analyst hours.</span>
+            </div>
           </div>
         </div>
 
@@ -1543,6 +1739,17 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
               highlightOutliers={highlightOutliers}
               onSelect={setSelected}
             />
+
+            <div className="graph-conclusion-strip">
+              <span className="conclusion-bullet">•</span>
+              <span>
+                {activeHypothesis.id === "H1" && "Each additional source system is associated with about 5.3 more monthly team-hours in the fitted regression (r = 0.74, R² = 0.55)."}
+                {activeHypothesis.id === "H2" && "Each manual data transfer per cycle delays reporting availability by approximately +0.8 business days (r = 0.78)."}
+                {activeHypothesis.id === "H4" && "Reconciliation hours explain 78% of observed reporting lag variance (r = 0.88; R² = 0.78), representing the strongest tested link."}
+                {activeHypothesis.id === "H3" && "Spreadsheet dependency is strongly associated with recurring manual correction frequency (r = 0.71)."}
+                {activeHypothesis.id === "H5" && "Upstream discrepancies cascade directly into unexpected forecast revisions and restatements (r = 0.69)."}
+              </span>
+            </div>
           </div>
 
           <div className="card tall">
@@ -1554,6 +1761,10 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
               <span className="tag">Matrix</span>
             </div>
             <Heatmap data={chartData} isDark={theme === "dark"} />
+            <div className="graph-conclusion-strip">
+              <span className="conclusion-bullet">•</span>
+              <span>Strong inter-variable collinearity (r = 0.64–0.88) demonstrates that operational friction cascades systematically rather than in isolation.</span>
+            </div>
           </div>
         </div>
       </section>
@@ -1581,59 +1792,14 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         </div>
       </section>
 
-      {/* Respondent Data Explorer Section */}
-      <section className="section reveal" id="explorer">
-        <SectionHead
-          num="05 · Granular Data Explorer"
-          title="Inspect individual respondent responses and friction scores."
-          body="Search across roles, company size tiers, and tech stacks. Click any row to inspect in the slide-over executive intelligence panel."
-        />
-        <RespondentExplorer data={chartData} onSelectRow={setSelected} />
+      {/* 05 · Model the Opportunity (TAM / SAM / SOM & Unit Economics) */}
+      <section className="section reveal" id="opportunity">
+        <OpportunityModel />
       </section>
 
-      {/* ROI & Financial Impact Modeling */}
-      <section className="section reveal" id="roi">
-        <SectionHead
-          num="06 · Value Modeling"
-          title="Interactive Financial & Capacity Recovery Simulator."
-          body="Calculate the exact financial and strategic analyst return on investment from deploying a finance-owned data readiness layer."
-        />
-        <ROICalculator />
-      </section>
-
-      {/* 07 · Strategic Solution Proposition */}
-      <section className="section reveal" id="proposition">
-        <SectionHead
-          num="07 · Product Proposition"
-          title="Solve the layer before FP&A—not FP&A itself."
-          body="A purpose-built Finance Data Readiness Layer connects source systems, standardizes entity mappings, audits control totals, and publishes trusted finance-ready feeds into the tools teams already love."
-        />
-        <div className="proposition reveal reveal-delay-2">
-          <div>
-            <div className="sec-num">Architectural Paradigm</div>
-            <h3>Finance-Ready Data Architecture</h3>
-            <p>
-              Connect → Standardize → Reconcile → Trace & Approve → Publish. Preserves Excel, BI, and planning tools while guaranteeing verified, auditable data feeding them.
-            </p>
-            <div className="solution-flow">
-              {["Connect", "Standardize", "Reconcile", "Trace & Approve", "Publish"].map((x, i) => (
-                <div className="snode" key={x} onClick={() => sounds.playPop()}>
-                  <b>{x}</b>
-                  <span>
-                    {[
-                      "Automated feeds from ERP, CRM, Billing, HRIS & Warehouses.",
-                      "Reusable finance-native chart of accounts & entity mappings.",
-                      "Instant exception alerts, control totals & variance checks.",
-                      "Audit-proof lineage, freshness tracking & human sign-off.",
-                      "Governed live feeds into Excel, Google Sheets, PowerBI & Anaplan."
-                    ][i]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <ProductMock />
-        </div>
+      {/* 06 · Strategic Product Thesis */}
+      <section className="section reveal" id="thesis">
+        <ProductThesis />
       </section>
 
       {/* Footer */}

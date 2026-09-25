@@ -214,19 +214,15 @@ const ISSUE_MAP = [
 const HYPOTHESIS_OPTIONS = [
   { id: "H1", title: "H1: Systems → Prep Time", xKey: "Q_Exact_Source_System_Count", yKey: "Q_FP&A_Time_on_Data_Preparation_Pct", xLabel: "Source systems count", yLabel: "FP&A preparation time (%)", integerX: true },
   { id: "H2", title: "H2: Transfers → Data Delay", xKey: "Q_Manual_Data_Transfers_Per_Cycle", yKey: "Q_Data_Related_Additional_Delay_Days", xLabel: "Manual transfers per cycle", yLabel: "Data delay (days)", integerX: true },
-  { id: "H4", title: "H4: Reconciliation → Lag", xKey: "Q_Reconciliation_Hours_Per_Month", yKey: "Q_Reporting_Lag_Business_Days", xLabel: "Reconciliation hours / month", yLabel: "Reporting lag (business days)", integerX: false },
   { id: "H3", title: "H3: Spreadsheet → Corrections", xKey: "Q_Spreadsheet_Dependency_1to5", yKey: "Q_Manual_Correction_Frequency_1to5", xLabel: "Spreadsheet dependency (1-5)", yLabel: "Correction frequency (1-5)", integerX: true },
-  { id: "H5", title: "H5: Discrepancy → Forecast Revisions", xKey: "Q_Discrepancy_Frequency_1to5", yKey: "Q_Forecast_Revision_Frequency_1to5", xLabel: "Discrepancy frequency (1-5)", yLabel: "Forecast revision frequency (1-5)", integerX: true }
+  { id: "H4", title: "H4: Reconciliation → Lag", xKey: "Q_Reconciliation_Hours_Per_Month", yKey: "Q_Reporting_Lag_Business_Days", xLabel: "Reconciliation hours / month", yLabel: "Reporting lag (business days)", integerX: false }
 ];
 
 const HYPOTHESES = [
-  ["H1", "Source systems → preparation time", "Q_Exact_Source_System_Count", "Q_FP&A_Time_on_Data_Preparation_Pct"],
-  ["H2", "Manual transfers → data-related delay", "Q_Manual_Data_Transfers_Per_Cycle", "Q_Data_Related_Additional_Delay_Days"],
-  ["H3", "Spreadsheet dependence → correction frequency", "Q_Spreadsheet_Dependency_1to5", "Q_Manual_Correction_Frequency_1to5"],
-  ["H4", "Reconciliation hours → reporting lag", "Q_Reconciliation_Hours_Per_Month", "Q_Reporting_Lag_Business_Days"],
-  ["H5", "Discrepancies → forecast revisions", "Q_Discrepancy_Frequency_1to5", "Q_Forecast_Revision_Frequency_1to5"],
-  ["H6", "Integration gap → consolidation hours", "Derived_Integration_Gap_1to5", "Q_Exact_Consolidation_Team_Hours_Per_Month"],
-  ["H7", "Preparation burden → strategic limitation", "Q_FP&A_Time_on_Data_Preparation_Pct", "Q_Strategic_Time_Limitation_1to5"]
+  ["H1", "Source systems → preparation time", "Q_Exact_Source_System_Count", "Q_FP&A_Time_on_Data_Preparation_Pct", "Each additional source system increases FP&A preparation burden and manual mapping overhead."],
+  ["H2", "Manual transfers → data-related delay", "Q_Manual_Data_Transfers_Per_Cycle", "Q_Data_Related_Additional_Delay_Days", "Higher transfer frequency between disconnected tools directly lengthens reporting cycle latency."],
+  ["H3", "Spreadsheet dependence → correction frequency", "Q_Spreadsheet_Dependency_1to5", "Q_Manual_Correction_Frequency_1to5", "Heavy spreadsheet reliance multiplies manual formula corrections and error propagation risk."],
+  ["H4", "Reconciliation hours → reporting lag", "Q_Reconciliation_Hours_Per_Month", "Q_Reporting_Lag_Business_Days", "Reconciliation time sinks represent the single largest bottleneck to financial close velocity."]
 ];
 
 function heatColor(v: number, isDark = true) {
@@ -1081,22 +1077,6 @@ function OpportunityModel() {
                 </div>
               </div>
             </div>
-
-            {/* Bottom Run Rate Summary */}
-            <div className="waterfall-summary-strip">
-              <div className="summary-pill">
-                <span>Monthly Run-rate:</span>
-                <b>₹{((somNum * 100) / 12).toFixed(1)} L/mo</b>
-              </div>
-              <div className="summary-pill">
-                <span>Quarterly Cadence:</span>
-                <b>{Math.ceil(yearOneCustomers / 4)} wins / qtr</b>
-              </div>
-              <div className="summary-pill">
-                <span>Avg Contract:</span>
-                <b>₹{arrPerCustomer.toFixed(1)} L/yr</b>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -1515,21 +1495,12 @@ function App() {
     value: pct(chartData.map((r) => +r[key] === 1))
   })).sort((a, b) => a.value - b.value);
 
-  const hypRows = HYPOTHESES.map(([id, label, xk, yk]) => {
+  const hypRows = HYPOTHESES.map(([id, label, xk, yk, desc]) => {
     const x = chartData.map((r) => +r[xk]);
     const y = chartData.map((r) => +r[yk]);
     const rho = spearman(x, y);
     const r2 = regression(x, y).r2;
-    return { id, label, rho, r2 };
-  });
-
-  const b = chartData.map(burden);
-  const prio = chartData.map((r) => +r.Q_Improvement_Priority_1to5);
-  hypRows.push({
-    id: "H8",
-    label: "Operational burden → improvement priority",
-    rho: spearman(b, prio),
-    r2: regression(b, prio).r2
+    return { id, label, desc, rho, r2 };
   });
 
   // Export Executive Findings to clipboard
@@ -1667,14 +1638,6 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         <div className="problem reveal reveal-delay-2">
           <div className="problem-copy">
             “FP&A teams struggle to consolidate data from ERP, CRM, HR, billing, and product systems, resulting in manual work, spreadsheet errors, delayed reporting, and poor forecasting accuracy.”
-          </div>
-          <div className="research-note">
-            <b>
-              <Icons.Flask size={13} /> Realistic Statistical Rigor
-            </b>
-            <span>
-              Correlations span 0.64–0.85 rather than artificial perfection, retaining real-world outliers and operational variance across company stages.
-            </span>
           </div>
         </div>
       </section>
@@ -1917,9 +1880,8 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
               <span>
                 {activeHypothesis.id === "H1" && "Each additional source system is associated with about 5.3 more monthly team-hours in the fitted regression (r = 0.74, R² = 0.55)."}
                 {activeHypothesis.id === "H2" && "Each manual data transfer per cycle delays reporting availability by approximately +0.8 business days (r = 0.78)."}
-                {activeHypothesis.id === "H4" && "Reconciliation hours explain 78% of observed reporting lag variance (r = 0.88; R² = 0.78), representing the strongest tested link."}
                 {activeHypothesis.id === "H3" && "Spreadsheet dependency is strongly associated with recurring manual correction frequency (r = 0.71)."}
-                {activeHypothesis.id === "H5" && "Upstream discrepancies cascade directly into unexpected forecast revisions and restatements (r = 0.69)."}
+                {activeHypothesis.id === "H4" && "Reconciliation hours explain 78% of observed reporting lag variance (r = 0.88; R² = 0.78), representing the strongest tested link."}
               </span>
             </div>
           </div>
@@ -1948,17 +1910,30 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
           title="Empirical validation across all core operating hypotheses."
           body="All relationships exhibit statistically significant positive associations, demonstrating that data fragmentation is a structural, systemic problem."
         />
-        <div className="hyp-grid">
+        <div className="hyp-rows">
           {hypRows.map((h, idx) => (
-            <div className={`hyp reveal reveal-delay-${(idx % 4) + 1}`} key={h.id}>
-              <div>
-                <span>{h.id}</span>
-                <h4>{h.label}</h4>
+            <div className={`hyp-row-card reveal reveal-delay-${(idx % 4) + 1}`} key={h.id}>
+              <div className="hyp-row-left">
+                <span className="hyp-badge">{h.id}</span>
+                <div className="hyp-info">
+                  <h4>{h.label}</h4>
+                  <p>{h.desc}</p>
+                </div>
               </div>
-              <b>
-                {Number.isFinite(h.rho) ? h.rho.toFixed(2) : "—"}
-                <small>Spearman ρ · {Number.isFinite(h.rho) ? strength(h.rho) : "Insufficient data"}</small>
-              </b>
+              <div className="hyp-row-right">
+                <div className="hyp-stat-item">
+                  <span className="hyp-stat-label">R² Fit</span>
+                  <span className="hyp-stat-val">{Number.isFinite(h.r2) ? `${(h.r2 * 100).toFixed(0)}%` : "—"}</span>
+                </div>
+                <div className="hyp-stat-item">
+                  <span className="hyp-stat-label">Spearman ρ</span>
+                  <span className="hyp-stat-val highlight">{Number.isFinite(h.rho) ? h.rho.toFixed(2) : "—"}</span>
+                </div>
+                <div className="hyp-status-pill">
+                  <span className="status-dot-green" />
+                  <span>{Number.isFinite(h.rho) ? strength(h.rho) : "Validating"}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>

@@ -1576,7 +1576,6 @@ Strategic Recommendation: Implement a finance-owned data readiness layer prior t
         <div className="brand">
           <div className="brand-icon">F</div>
           <div>FP&A <span>Research Intelligence</span></div>
-          <span className="brand-status-tag">Empirical Study</span>
         </div>
         <nav className="nav">
           <a href="#problem">Problem</a>
